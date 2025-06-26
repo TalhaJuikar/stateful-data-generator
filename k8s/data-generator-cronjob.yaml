@@ -6,8 +6,8 @@ metadata:
     app: stateful-app
     job: data-generator
 spec:
-  schedule: "0 */3 * * *"  # Run every 3 hours
-  concurrencyPolicy: Forbid  # Don't start a new job if previous is still running
+  schedule: "0 */1 * * *"
+  concurrencyPolicy: Forbid
   jobTemplate:
     spec:
       template:
@@ -42,5 +42,5 @@ spec:
             - name: APP_SERVICE_URL
               value: "http://stateful-app-service"
             - name: DATA_COUNT
-              value: "20"  # Change this to control how many records to create each time
+              value: "10"
           restartPolicy: OnFailure

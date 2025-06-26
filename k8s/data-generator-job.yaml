@@ -38,8 +38,8 @@ spec:
         - name: APP_SERVICE_URL
           value: "http://stateful-app-service"
         - name: DATA_COUNT
-          value: "20"  # Change this to control how many records to create
+          value: "30"
       restartPolicy: OnFailure
-  backoffLimit: 3  # Number of retries before job is marked as failed
-  completions: 1   # Job completes after 1 successful pod
-  parallelism: 1   # Run one pod at a time
+  backoffLimit: 3
+  completions: 1
+  parallelism: 1

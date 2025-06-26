@@ -12,50 +12,6 @@ This is a stateful application consisting of a Node.js API with an interactive U
    - Multiple pages for data management and visualization
 2. **MongoDB Database**: A stateful database that persists data.
 
-## Project Structure
-
-```plaintext
-stateful/
-├── src/
-│   ├── server.js         # Node.js application code with EJS support
-│   ├── views/            # EJS templates
-│   │   ├── layout.ejs    # Main layout template
-│   │   ├── index.ejs     # Dashboard page
-│   │   ├── stats.ejs     # Statistics page
-│   │   └── generator.ejs # Data generator page
-│   └── public/           # Static assets
-│       ├── css/
-│       │   └── styles.css
-│       └── js/
-│           └── app.js
-├── k8s/
-│   ├── mongodb-statefulset.yaml  # MongoDB StatefulSet
-│   ├── mongodb-service.yaml      # MongoDB Service
-│   ├── app-deployment.yaml       # Application Deployment
-│   └── app-service.yaml          # Application Service
-├── Dockerfile            # Dockerfile for building the Node.js app
-├── package.json          # Node.js dependencies
-├── generate_load.sh      # Script to generate load for testing
-└── README.md             # This file
-```
-
-## UI Features
-
-1. **Dashboard UI**: A modern Bootstrap-based UI with responsive design
-2. **Multiple Pages**: 
-   - Dashboard: Displays data and key metrics with customizable entries display (10/20/50/100)
-   - Statistics: Visualizes trends and distributions
-   - Data Generator: Interactive form for generating test data
-3. **Interactive Features**:
-   - Add/view/delete records
-   - Select number of entries to display (10, 20, 50, or 100)
-   - Navigate through paginated results with intuitive page controls
-   - Multi-select entries and batch delete functionality
-   - One-click delete all with confirmation safeguards
-   - Generate random data with progress tracking
-   - View charts and statistics
-   - Generation history tracking
-
 ## Prerequisites
 
 - Docker
@@ -68,18 +24,18 @@ stateful/
 
 ```bash
 # From the project root
-docker build -t ghcr.io/talhajuikar/stateful-data-generator:v1.0.1 .
-docker push ghcr.io/talhajuikar/stateful-data-generator:v1.0.1
+docker build -t ghcr.io/talhajuikar/stateful-data-generator:v1.1.1 .
+docker push ghcr.io/talhajuikar/stateful-data-generator:v1.1.1
 ```
 
-Make sure to replace `ghcr.io/talhajuikar/stateful-data-generator:v1.0.1` with your Docker Hub username or your private registry if needed.
+Make sure to replace `ghcr.io/talhajuikar/stateful-data-generator:v1.1.1` with your Docker Hub username or your private registry if needed.
 
 ### 2. Update the image name in the deployment
 
 Edit the `k8s/app-deployment.yaml` file and update the image name:
 
 ```yaml
-image: ghcr.io/talhajuikar/stateful-data-generator:v1.0.1
+image: ghcr.io/talhajuikar/stateful-data-generator:v1.1.1
 ```
 
 ### 3. Deploy the application to Kubernetes
@@ -212,7 +168,7 @@ If you've already deployed an earlier version:
 
 ```bash
 # Update the image version in your deployment
-kubectl set image deployment/stateful-app stateful-app=ghcr.io/talhajuikar/stateful-data-generator:v1.0.1
+kubectl set image deployment/stateful-app stateful-app=ghcr.io/talhajuikar/stateful-data-generator:v1.1.1
 
 # Or update the YAML file and apply it
 kubectl apply -f k8s/app-deployment.yaml
