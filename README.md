@@ -68,18 +68,18 @@ stateful/
 
 ```bash
 # From the project root
-docker build -t talhajuikar/stateful-data-generator:v1.0.0 .
-docker push talhajuikar/stateful-data-generator:v1.0.0
+docker build -t ghcr.io/talhajuikar/stateful-data-generator:v1.0.1 .
+docker push ghcr.io/talhajuikar/stateful-data-generator:v1.0.1
 ```
 
-Make sure to replace `talhajuikar/stateful-data-generator:v1.0.0` with your Docker Hub username or your private registry if needed.
+Make sure to replace `ghcr.io/talhajuikar/stateful-data-generator:v1.0.1` with your Docker Hub username or your private registry if needed.
 
 ### 2. Update the image name in the deployment
 
 Edit the `k8s/app-deployment.yaml` file and update the image name:
 
 ```yaml
-image: talhajuikar/stateful-data-generator:v1.0.0
+image: ghcr.io/talhajuikar/stateful-data-generator:v1.0.1
 ```
 
 ### 3. Deploy the application to Kubernetes
@@ -212,7 +212,7 @@ If you've already deployed an earlier version:
 
 ```bash
 # Update the image version in your deployment
-kubectl set image deployment/stateful-app stateful-app=talhajuikar/stateful-data-generator:v1.0.0
+kubectl set image deployment/stateful-app stateful-app=ghcr.io/talhajuikar/stateful-data-generator:v1.0.1
 
 # Or update the YAML file and apply it
 kubectl apply -f k8s/app-deployment.yaml
