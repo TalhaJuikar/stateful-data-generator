@@ -49,6 +49,9 @@ stateful/
 3. **Interactive Features**:
    - Add/view/delete records
    - Select number of entries to display (10, 20, 50, or 100)
+   - Navigate through paginated results with intuitive page controls
+   - Multi-select entries and batch delete functionality
+   - One-click delete all with confirmation safeguards
    - Generate random data with progress tracking
    - View charts and statistics
    - Generation history tracking

@@ -8,16 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (path === '/' || path === '') {
         console.log('Initializing dashboard');
         initDashboard();
-        
-        // Set up entries limit selector
-        const entriesLimitSelect = document.getElementById('entriesLimit');
-        if (entriesLimitSelect) {
-            entriesLimitSelect.addEventListener('change', function() {
-                const limit = this.value;
-                console.log('Changing entries limit to:', limit);
-                window.location.href = `/?limit=${limit}`;
-            });
-        }
+    }
     } else if (path === '/stats') {
         console.log('Initializing stats page');
         initStats();
@@ -136,6 +127,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Dashboard initialization
 function initDashboard() {
+    console.log('Setting up dashboard functionality');
+    
+    // Set up charts and statistics if they exist
+    setupCharts();
+    
+    // Setup multi-select functionality
+    setupMultiSelect();
+    
+    // Setup Delete All functionality
+    setupDeleteAll();
+    
+    // Setup entries limit selector
+    setupEntriesLimitSelector();
+}
+
+function setupCharts() {
     // Data creation chart
     const dataCreationCtx = document.getElementById('dataCreationChart');
     if (dataCreationCtx) {
@@ -464,4 +471,124 @@ function updateGenerationHistoryUI() {
             <span class="badge bg-primary rounded-pill">${item.count}</span>
         </li>
     `).join('');
+}
+
+function setupMultiSelect() {
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const entryCheckboxes = document.querySelectorAll('.entry-checkbox');
+    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    
+    if (!selectAllCheckbox || !deleteSelectedBtn) return;
+    
+    // Update Delete Selected button visibility based on selections
+    function updateDeleteSelectedButton() {
+        const selectedCount = document.querySelectorAll('.entry-checkbox:checked').length;
+        if (selectedCount > 0) {
+            deleteSelectedBtn.classList.remove('d-none');
+            deleteSelectedBtn.textContent = `Delete Selected (${selectedCount})`;
+        } else {
+            deleteSelectedBtn.classList.add('d-none');
+        }
+    }
+    
+    // Handle "Select All" checkbox
+    selectAllCheckbox.addEventListener('change', function() {
+        entryCheckboxes.forEach(checkbox => {
+            checkbox.checked = selectAllCheckbox.checked;
+        });
+        updateDeleteSelectedButton();
+    });
+    
+    // Handle individual checkboxes
+    entryCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            // Update "Select All" checkbox state
+            const allChecked = document.querySelectorAll('.entry-checkbox').length === 
+                               document.querySelectorAll('.entry-checkbox:checked').length;
+            selectAllCheckbox.checked = allChecked;
+            
+            updateDeleteSelectedButton();
+        });
+    });
+    
+    // Handle Delete Selected button
+    deleteSelectedBtn.addEventListener('click', function() {
+        const selectedIds = Array.from(document.querySelectorAll('.entry-checkbox:checked'))
+                               .map(checkbox => checkbox.value);
+        
+        if (selectedIds.length === 0) return;
+        
+        // Update the count in the modal
+        document.getElementById('selectedItemsCount').textContent = selectedIds.length;
+        
+        // Show confirmation modal
+        const deleteSelectedModal = new bootstrap.Modal(document.getElementById('deleteSelectedModal'));
+        deleteSelectedModal.show();
+        
+        // Handle confirmation
+        document.getElementById('confirmDeleteSelectedBtn').onclick = function() {
+            fetch('/api/data/delete-multiple', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ids: selectedIds })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Delete multiple successful:', data);
+                deleteSelectedModal.hide();
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Error deleting multiple entries:', error);
+                alert('Failed to delete the selected items. Please try again.');
+            });
+        };
+    });
+}
+
+function setupDeleteAll() {
+    const deleteAllBtn = document.getElementById('deleteAllBtn');
+    if (!deleteAllBtn) return;
+    
+    deleteAllBtn.addEventListener('click', function() {
+        // Show confirmation modal
+        const deleteAllModal = new bootstrap.Modal(document.getElementById('deleteAllModal'));
+        deleteAllModal.show();
+        
+        // Handle confirmation
+        document.getElementById('confirmDeleteAllBtn').onclick = function() {
+            fetch('/api/data', {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Delete all successful:', data);
+                deleteAllModal.hide();
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Error deleting all entries:', error);
+                alert('Failed to delete all items. Please try again.');
+            });
+        };
+    });
+}
+
+function setupEntriesLimitSelector() {
+    const entriesLimitSelect = document.getElementById('entriesLimit');
+    if (entriesLimitSelect) {
+        entriesLimitSelect.addEventListener('change', function() {
+            const limit = this.value;
+            console.log('Changing entries limit to:', limit);
+            
+            // Get current page from URL or default to 1
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentPage = urlParams.get('page') || 1;
+            
+            // Navigate to new URL with both limit and page parameters
+            window.location.href = `/?limit=${limit}&page=${currentPage}`;
+        });
+    }
 }

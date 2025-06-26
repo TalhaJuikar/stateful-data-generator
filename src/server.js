@@ -44,17 +44,32 @@ const Data = mongoose.model('Data', DataSchema);
 // Routes
 app.get('/', async (req, res) => {
   try {
-    // Get limit from query parameters or default to 10
+    // Get limit and page from query parameters or use defaults
     const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
     const validLimits = [10, 20, 50, 100];
     const safeLimit = validLimits.includes(limit) ? limit : 10;
     
-    const data = await Data.find().sort({ createdAt: -1 }).limit(safeLimit);
+    // Calculate skip value for pagination
+    const skip = (page - 1) * safeLimit;
+    
+    // Get data with pagination
+    const data = await Data.find()
+                          .sort({ createdAt: -1 })
+                          .skip(skip)
+                          .limit(safeLimit);
+    
+    // Get total count for pagination
     const totalCount = await Data.countDocuments();
+    
+    // Calculate total pages
+    const totalPages = Math.ceil(totalCount / safeLimit);
     
     res.render('index', { 
       data: data,
       currentLimit: safeLimit,
+      currentPage: page,
+      totalPages: totalPages,
       totalCount: totalCount
     });
   } catch (err) {
@@ -62,6 +77,8 @@ app.get('/', async (req, res) => {
     res.status(500).render('index', { 
       data: [],
       currentLimit: 10,
+      currentPage: 1,
+      totalPages: 0,
       totalCount: 0,
       error: 'Failed to fetch data'
     });
@@ -154,6 +171,39 @@ app.delete('/api/data/:id', async (req, res) => {
     const data = await Data.findByIdAndDelete(req.params.id);
     if (!data) return res.status(404).json({ error: 'Data not found' });
     res.json({ message: 'Data deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete multiple entries
+app.post('/api/data/delete-multiple', async (req, res) => {
+  try {
+    const { ids } = req.body;
+    
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'No valid IDs provided' });
+    }
+    
+    const result = await Data.deleteMany({ _id: { $in: ids } });
+    
+    res.json({ 
+      message: `Successfully deleted ${result.deletedCount} entries`,
+      deletedCount: result.deletedCount 
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete all entries
+app.delete('/api/data', async (req, res) => {
+  try {
+    const result = await Data.deleteMany({});
+    res.json({ 
+      message: `Successfully deleted all ${result.deletedCount} entries`,
+      deletedCount: result.deletedCount 
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
