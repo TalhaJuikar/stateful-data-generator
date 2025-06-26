@@ -1,0 +1,81 @@
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h3>Data Generator</h3>
+            </div>
+            <div class="card-body">
+                <form id="generateDataForm">
+                    <div class="mb-3">
+                        <label for="dataCount" class="form-label">Number of Records to Generate</label>
+                        <input type="range" class="form-range" min="1" max="100" value="10" id="dataCount">
+                        <div class="text-center">
+                            <span id="dataCountValue">10</span> records
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="useRandomNames" checked>
+                            <label class="form-check-label" for="useRandomNames">
+                                Generate Random Names
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="useRandomEmails" checked>
+                            <label class="form-check-label" for="useRandomEmails">
+                                Generate Random Emails
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="messageLength" class="form-label">Message Length</label>
+                        <select class="form-select" id="messageLength">
+                            <option value="short">Short (1-2 sentences)</option>
+                            <option value="medium" selected>Medium (1 paragraph)</option>
+                            <option value="long">Long (2-3 paragraphs)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg" id="generateButton">Generate Data</button>
+                    </div>
+                </form>
+                
+                <div class="mt-4">
+                    <h4>Generation Progress</h4>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" id="generationProgress" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3 d-none" id="generationResult">
+                        <!-- Generation result will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4>Generated Data History</h4>
+                <button class="btn btn-danger btn-sm" id="clearHistoryBtn">Clear History</button>
+            </div>
+            <div class="card-body">
+                <ul class="list-group" id="generationHistory">
+                    <!-- Generation history will appear here -->
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        No generation history available
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

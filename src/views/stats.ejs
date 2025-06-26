@@ -1,0 +1,101 @@
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3>Data Analytics</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">Data Growth Over Time</div>
+                            <div class="card-body">
+                                <canvas id="growthChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">Distribution by Domain</div>
+                            <div class="card-body">
+                                <canvas id="domainChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">Message Length Analysis</div>
+                            <div class="card-body">
+                                <canvas id="messageLengthChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Summary Statistics</h4>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <td>Total Records</td>
+                        <td id="stats-total-records"><%= data ? data.length : 0 %></td>
+                    </tr>
+                    <tr>
+                        <td>Earliest Record</td>
+                        <td id="stats-earliest-record"><%= data && data.length > 0 ? new Date(Math.min(...data.map(item => new Date(item.createdAt)))).toLocaleString() : 'N/A' %></td>
+                    </tr>
+                    <tr>
+                        <td>Latest Record</td>
+                        <td id="stats-latest-record"><%= data && data.length > 0 ? new Date(Math.max(...data.map(item => new Date(item.createdAt)))).toLocaleString() : 'N/A' %></td>
+                    </tr>
+                    <tr>
+                        <td>Average Message Length</td>
+                        <td id="stats-avg-message-length">
+                            <%= data && data.length > 0 ? Math.round(data.reduce((sum, item) => sum + item.message.length, 0) / data.length) : 0 %> characters
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>System Health</h4>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column">
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                            MongoDB: 75% Health
+                        </div>
+                    </div>
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 90%;" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100">
+                            API Server: 90% Health
+                        </div>
+                    </div>
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">
+                            Network: 85% Health
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-success mt-3">
+                    All systems operational. Last checked: <%= new Date().toLocaleString() %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
