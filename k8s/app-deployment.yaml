@@ -14,8 +14,7 @@ spec:
     spec:
       containers:
       - name: stateful-app
-        image: ntipladmin/stateful-app:1.4
-        # Updated to add multi-select and batch delete functionality
+        image: talhajuikar/stateful-data-generator:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
