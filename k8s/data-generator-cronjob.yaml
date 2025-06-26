@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: data-generator-cron
+  labels:
+    app: stateful-app
+    job: data-generator
+spec:
+  schedule: "0 */3 * * *"  # Run every 3 hours
+  concurrencyPolicy: Forbid  # Don't start a new job if previous is still running
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: stateful-app
+            job: data-generator
+        spec:
+          containers:
+          - name: data-generator
+            image: curlimages/curl:7.87.0
+            command:
+            - sh
+            - -c
+            - |
+              # Wait for the API service to be ready
+              echo "Waiting for API service to be ready..."
+              until curl -s --head --fail ${APP_SERVICE_URL}/health; do 
+                echo "Service not ready yet. Waiting 2 seconds..."
+                sleep 2
+              done
+              
+              # Generate the requested number of data records
+              echo "Generating ${DATA_COUNT} records..."
+              curl -s -X POST -H "Content-Type: application/json" \
+                -d "{\"count\": ${DATA_COUNT}}" \
+                "${APP_SERVICE_URL}/api/generate"
+              
+              # Report success
+              echo "Data generation completed successfully at $(date)"
+            env:
+            - name: APP_SERVICE_URL
+              value: "http://stateful-app-service"
+            - name: DATA_COUNT
+              value: "20"  # Change this to control how many records to create each time
+          restartPolicy: OnFailure

@@ -2,9 +2,11 @@
 
 This is a stateful application consisting of a Node.js API with an interactive UI connected to a MongoDB database. It's designed to be deployed to a Kubernetes cluster for testing stateful applications.
 
+> Last updated: June 26, 2025
+
 ## Application Components
 
-1. **Node.js API with Interactive UI**: 
+1. **Node.js API with Interactive UI**:  
    - Express.js API with endpoints to create, read, and delete data
    - Modern Bootstrap-based UI with responsive design
    - Multiple pages for data management and visualization
@@ -37,15 +39,16 @@ stateful/
 └── README.md             # This file
 ```
 
-## Interactive UI Features
+## UI Features
 
 1. **Dashboard UI**: A modern Bootstrap-based UI with responsive design
 2. **Multiple Pages**: 
-   - Dashboard: Displays data and key metrics
+   - Dashboard: Displays data and key metrics with customizable entries display (10/20/50/100)
    - Statistics: Visualizes trends and distributions
    - Data Generator: Interactive form for generating test data
 3. **Interactive Features**:
    - Add/view/delete records
+   - Select number of entries to display (10, 20, 50, or 100)
    - Generate random data with progress tracking
    - View charts and statistics
    - Generation history tracking
@@ -120,6 +123,47 @@ You can modify the following parameters in the script:
 - `REQUEST_RATE`: Number of requests per second
 - `DURATION`: Test duration in seconds
 
+## Generating Data with Kubernetes Jobs
+
+You can use Kubernetes jobs to automatically generate data for your application. Two options are provided:
+
+### One-time Data Generation Job
+
+To run a one-time job that generates a specified number of records:
+
+```bash
+# Apply the job
+kubectl apply -f k8s/data-generator-job.yaml
+
+# Check job status
+kubectl get jobs
+
+# View job logs
+kubectl logs job/data-generator
+```
+
+You can customize the number of records by editing the `DATA_COUNT` environment variable in the job specification.
+
+### Scheduled Data Generation (CronJob)
+
+To set up a scheduled job that automatically generates data at regular intervals:
+
+```bash
+# Apply the cronjob
+kubectl apply -f k8s/data-generator-cronjob.yaml
+
+# Check scheduled jobs
+kubectl get cronjobs
+
+# View cronjob details
+kubectl describe cronjob data-generator-cron
+
+# View logs from the most recent job
+kubectl logs $(kubectl get pods -l job-name=data-generator-cron-$(kubectl get jobs -l job-name=data-generator-cron --sort-by=.metadata.creationTimestamp | tail -1 | awk '{print $1}') -o name)
+```
+
+The default schedule is set to run every 3 hours. You can customize the schedule and the number of records by editing the CronJob specification.
+
 ## API Endpoints
 
 - `GET /api/data`: Get all data entries
@@ -127,6 +171,7 @@ You can modify the following parameters in the script:
 - `POST /api/data`: Create new data entry
 - `POST /api/generate`: Generate random data (specify count in request body)
 - `DELETE /api/data/:id`: Delete a data entry
+- `GET /health`: Health check endpoint (returns status 200 if service is running)
 
 ## Testing the UI Features
 
@@ -139,7 +184,7 @@ You can modify the following parameters in the script:
 
 To test the stateful behavior:
 
-1. Generate some data
+1. Generate some data through the UI or API
 2. Scale the MongoDB StatefulSet down and back up
 3. Verify that the data is still accessible
 
@@ -147,12 +192,22 @@ To test the stateful behavior:
 # Scale down
 kubectl scale statefulset mongodb --replicas=0
 
-# Wait a moment, then scale back up
+# Wait for the StatefulSet to fully scale down
+kubectl get pods -l app=mongodb -w
+
+# Scale back up
 kubectl scale statefulset mongodb --replicas=1
 
-# Check if data is still accessible
+# Wait for MongoDB to be ready again
+kubectl wait --for=condition=ready pod/mongodb-0 --timeout=120s
+
+# Check if data is still accessible through the API
 curl http://<application-url>/api/data
+
+# Or visit the application UI to verify data persistence
 ```
+
+This test confirms that the Persistent Volume Claims (PVCs) are properly working and your data survives pod restarts. The PVCs maintain your MongoDB data even when the StatefulSet is scaled down to zero, demonstrating true stateful persistence in Kubernetes.
 
 ## Updating an Existing Deployment
 
@@ -164,4 +219,68 @@ kubectl set image deployment/stateful-app stateful-app=ntipladmin/stateful-app:1
 
 # Or update the YAML file and apply it
 kubectl apply -f k8s/app-deployment.yaml
+```
+
+## Environment Variables
+
+The application can be configured with the following environment variables:
+
+- `PORT`: The port on which the application runs (default: 3000)
+- `MONGODB_URI`: MongoDB connection string (default: mongodb://mongodb-service:27017/statefulapp)
+
+You can override these in your Kubernetes deployment by editing the `app-deployment.yaml` file:
+
+```yaml
+env:
+- name: PORT
+  value: "3000"
+- name: MONGODB_URI
+  value: "mongodb://mongodb-service:27017/statefulapp"
+```
+
+## Troubleshooting
+
+### MongoDB Connection Issues
+
+If the application can't connect to MongoDB:
+
+```bash
+# Check if MongoDB pod is running
+kubectl get pods -l app=mongodb
+
+# Check MongoDB logs
+kubectl logs mongodb-0
+
+# Check if MongoDB service is properly configured
+kubectl describe svc mongodb-service
+```
+
+### Application Issues
+
+If you're experiencing issues with the application:
+
+```bash
+# Check application logs
+kubectl logs -l app=stateful-app
+
+# Check if the application pod is running
+kubectl get pods -l app=stateful-app
+
+# Check if the service is properly configured
+kubectl describe svc stateful-app-service
+```
+
+### Data Persistence Issues
+
+If data is not persisting after pod restarts:
+
+```bash
+# Check the Persistent Volume Claims
+kubectl get pvc
+
+# Check the Persistent Volumes
+kubectl get pv
+
+# Describe the specific PVC for more details
+kubectl describe pvc mongodb-data-mongodb-0
 ```

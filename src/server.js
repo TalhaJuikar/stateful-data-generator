@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const faker = require('faker');
 const path = require('path');
+const expressLayouts = require('express-ejs-layouts');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,6 +17,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+app.use(expressLayouts);
+app.set('layout', 'layout');
 
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI, {
@@ -41,16 +44,25 @@ const Data = mongoose.model('Data', DataSchema);
 // Routes
 app.get('/', async (req, res) => {
   try {
-    const data = await Data.find().sort({ createdAt: -1 });
+    // Get limit from query parameters or default to 10
+    const limit = parseInt(req.query.limit) || 10;
+    const validLimits = [10, 20, 50, 100];
+    const safeLimit = validLimits.includes(limit) ? limit : 10;
+    
+    const data = await Data.find().sort({ createdAt: -1 }).limit(safeLimit);
+    const totalCount = await Data.countDocuments();
+    
     res.render('index', { 
-      body: 'index',
-      data: data
+      data: data,
+      currentLimit: safeLimit,
+      totalCount: totalCount
     });
   } catch (err) {
     console.error(err);
     res.status(500).render('index', { 
-      body: 'index',
       data: [],
+      currentLimit: 10,
+      totalCount: 0,
       error: 'Failed to fetch data'
     });
   }
@@ -60,13 +72,11 @@ app.get('/stats', async (req, res) => {
   try {
     const data = await Data.find();
     res.render('stats', {
-      body: 'stats',
       data: data
     });
   } catch (err) {
     console.error(err);
     res.status(500).render('stats', {
-      body: 'stats',
       data: [],
       error: 'Failed to fetch data'
     });
@@ -74,9 +84,7 @@ app.get('/stats', async (req, res) => {
 });
 
 app.get('/generator', (req, res) => {
-  res.render('generator', {
-    body: 'generator'
-  });
+  res.render('generator');
 });
 
 // Get all data

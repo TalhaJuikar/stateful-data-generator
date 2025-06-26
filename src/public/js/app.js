@@ -1,26 +1,46 @@
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Document ready - initializing application');
+    
     // Initialize the page based on its path
     const path = window.location.pathname;
+    console.log('Current path:', path);
     
     if (path === '/' || path === '') {
+        console.log('Initializing dashboard');
         initDashboard();
+        
+        // Set up entries limit selector
+        const entriesLimitSelect = document.getElementById('entriesLimit');
+        if (entriesLimitSelect) {
+            entriesLimitSelect.addEventListener('change', function() {
+                const limit = this.value;
+                console.log('Changing entries limit to:', limit);
+                window.location.href = `/?limit=${limit}`;
+            });
+        }
     } else if (path === '/stats') {
+        console.log('Initializing stats page');
         initStats();
     } else if (path === '/generator') {
+        console.log('Initializing generator page');
         initGenerator();
     }
     
     // Form submission for adding new data
     const addDataForm = document.getElementById('addDataForm');
+    console.log('Add data form found:', !!addDataForm);
+    
     if (addDataForm) {
         addDataForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            console.log('Form submitted');
             
             const formData = {
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
                 message: document.getElementById('message').value
             };
+            console.log('Form data:', formData);
             
             fetch('/api/data', {
                 method: 'POST',
@@ -40,9 +60,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Delete data functionality
+    console.log('Setting up delete functionality');
     document.querySelectorAll('.delete-data').forEach(button => {
+        console.log('Found delete button:', button);
         button.addEventListener('click', function() {
             const id = this.getAttribute('data-id');
+            console.log('Delete clicked for ID:', id);
             
             if (confirm('Are you sure you want to delete this item?')) {
                 fetch(`/api/data/${id}`, {
@@ -50,21 +73,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .then(response => response.json())
                 .then(data => {
+                    console.log('Delete successful:', data);
                     window.location.reload();
                 })
-                .catch(error => console.error('Error deleting data:', error));
+                .catch(error => {
+                    console.error('Error deleting data:', error);
+                    alert('Failed to delete the item. Please try again.');
+                });
             }
         });
     });
     
     // View data modal
+    console.log('Setting up view functionality');
     document.querySelectorAll('.view-data').forEach(button => {
+        console.log('Found view button:', button);
         button.addEventListener('click', function() {
             const id = this.getAttribute('data-id');
+            console.log('View clicked for ID:', id);
             
             fetch(`/api/data/${id}`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data details');
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Fetched data details:', data);
                 const content = document.getElementById('viewDataContent');
                 content.innerHTML = `
                     <div class="mb-3">
@@ -89,7 +125,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 `;
             })
-            .catch(error => console.error('Error fetching data details:', error));
+            .catch(error => {
+                console.error('Error fetching data details:', error);
+                const content = document.getElementById('viewDataContent');
+                content.innerHTML = `<div class="alert alert-danger">Failed to load data details. Error: ${error.message}</div>`;
+            });
         });
     });
 });
