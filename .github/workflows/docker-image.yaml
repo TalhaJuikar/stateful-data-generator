@@ -62,10 +62,12 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}:${{ steps.semver.outputs.next_no_prefix || steps.semver.outputs.next }}
             
-      - name: Create Release Tag
-        if: steps.semver.outputs.next != steps.semver.outputs.current
-        run: |
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'actions@github.com'
-          git tag -a ${{ steps.semver.outputs.next }} -m "Release ${{ steps.semver.outputs.next }}"
-          git push origin ${{ steps.semver.outputs.next }}
+      - name: Create Release
+        uses: ncipollo/release-action@v1.12.0
+        with:
+          allowUpdates: true
+          draft: false
+          makeLatest: true
+          name: ${{ steps.semver.outputs.next }}
+          body: Changelog Contents
+          token: ${{ github.token }}
