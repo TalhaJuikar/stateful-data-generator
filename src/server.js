@@ -48,7 +48,9 @@ app.get('/', async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
     const validLimits = [10, 20, 50, 100];
-    const safeLimit = validLimits.includes(limit) ? limit : 10;
+    
+    // Fix: Convert number to int and then check if it's valid
+    const safeLimit = validLimits.find(val => val === limit) || 10;
     
     // Calculate skip value for pagination
     const skip = (page - 1) * safeLimit;

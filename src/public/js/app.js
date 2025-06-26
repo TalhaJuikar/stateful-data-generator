@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (path === '/' || path === '') {
         console.log('Initializing dashboard');
         initDashboard();
-    }
     } else if (path === '/stats') {
         console.log('Initializing stats page');
         initStats();
@@ -140,6 +139,34 @@ function initDashboard() {
     
     // Setup entries limit selector
     setupEntriesLimitSelector();
+    
+    // Setup individual delete buttons
+    setupDeleteButtons();
+}
+
+function setupDeleteButtons() {
+    document.querySelectorAll('.delete-data').forEach(button => {
+        console.log('Setting up delete button:', button);
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            console.log('Delete clicked for ID:', id);
+            
+            if (confirm('Are you sure you want to delete this item?')) {
+                fetch(`/api/data/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Delete successful:', data);
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error('Error deleting data:', error);
+                    alert('Failed to delete the item. Please try again.');
+                });
+            }
+        });
+    });
 }
 
 function setupCharts() {
@@ -325,6 +352,7 @@ function initStats() {
 
 // Generator page initialization
 function initGenerator() {
+    console.log('Initializing generator page');
     const dataCountSlider = document.getElementById('dataCount');
     const dataCountValue = document.getElementById('dataCountValue');
     const generateForm = document.getElementById('generateDataForm');
@@ -332,7 +360,13 @@ function initGenerator() {
     const resultAlert = document.getElementById('generationResult');
     
     if (dataCountSlider && dataCountValue) {
+        console.log('Setting up data count slider');
+        // Set initial value
+        dataCountValue.textContent = dataCountSlider.value;
+        
+        // Add event listener
         dataCountSlider.addEventListener('input', function() {
+            console.log('Slider value changed to:', this.value);
             dataCountValue.textContent = this.value;
         });
     }
@@ -549,31 +583,27 @@ function setupMultiSelect() {
 }
 
 function setupDeleteAll() {
-    const deleteAllBtn = document.getElementById('deleteAllBtn');
-    if (!deleteAllBtn) return;
-    
-    deleteAllBtn.addEventListener('click', function() {
-        // Show confirmation modal
-        const deleteAllModal = new bootstrap.Modal(document.getElementById('deleteAllModal'));
-        deleteAllModal.show();
-        
-        // Handle confirmation
-        document.getElementById('confirmDeleteAllBtn').onclick = function() {
+    const confirmDeleteAllBtn = document.getElementById('confirmDeleteAllBtn');
+    if (confirmDeleteAllBtn) {
+        confirmDeleteAllBtn.addEventListener('click', function() {
             fetch('/api/data', {
                 method: 'DELETE'
             })
             .then(response => response.json())
             .then(data => {
                 console.log('Delete all successful:', data);
-                deleteAllModal.hide();
+                const deleteAllModal = bootstrap.Modal.getInstance(document.getElementById('deleteAllModal'));
+                if (deleteAllModal) {
+                    deleteAllModal.hide();
+                }
                 window.location.reload();
             })
             .catch(error => {
                 console.error('Error deleting all entries:', error);
                 alert('Failed to delete all items. Please try again.');
             });
-        };
-    });
+        });
+    }
 }
 
 function setupEntriesLimitSelector() {

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-APP_ENDPOINT="http://192.168.203.56:30395"  # Change to your service endpoint
+APP_ENDPOINT="http://192.168.203.56:30709"  # Change to your service endpoint
 DATA_COUNT=10
 REQUEST_RATE=5  # Requests per second
 DURATION=60     # Test duration in seconds

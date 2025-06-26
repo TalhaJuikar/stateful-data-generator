@@ -8,7 +8,7 @@
                 <form id="generateDataForm">
                     <div class="mb-3">
                         <label for="dataCount" class="form-label">Number of Records to Generate</label>
-                        <input type="range" class="form-range" min="1" max="100" value="10" id="dataCount">
+                        <input type="range" class="form-range" min="1" max="100" value="10" id="dataCount" oninput="document.getElementById('dataCountValue').textContent = this.value;">
                         <div class="text-center">
                             <span id="dataCountValue">10</span> records
                         </div>

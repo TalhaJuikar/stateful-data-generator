@@ -153,7 +153,7 @@
                     <span>MongoDB Connection: <strong id="mongodb-status">Connected</strong></span>
                 </div>
                 <div>
-                    <p><strong>Total Records:</strong> <span id="total-records"><%= data ? data.length : 0 %></span></p>
+                    <p><strong>Total Records:</strong> <span id="total-records"><%= typeof totalCount !== 'undefined' ? totalCount : (data ? data.length : 0) %></span></p>
                     <p><strong>Last Updated:</strong> <span id="last-updated"><%= new Date().toLocaleString() %></span></p>
                 </div>
             </div>
