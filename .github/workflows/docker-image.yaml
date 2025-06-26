@@ -38,6 +38,14 @@ jobs:
           branch: main
           patchAll: true
 
+      - name: Push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ steps.semver.outputs.next }}
+          tag_prefix: ""
+
       - name: Display detected version
         run: |
           echo "Current version: ${{ steps.semver.outputs.current }}"
@@ -62,13 +70,3 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}:${{ steps.semver.outputs.next_no_prefix || steps.semver.outputs.next }}
-            
-      - name: Create Release
-        uses: ncipollo/release-action@v1.12.0
-        with:
-          allowUpdates: true
-          draft: false
-          makeLatest: true
-          name: ${{ steps.semver.outputs.next }}
-          body: Changelog Contents
-          token: ${{ github.token }}
