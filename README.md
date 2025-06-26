@@ -68,18 +68,18 @@ stateful/
 
 ```bash
 # From the project root
-docker build -t ntipladmin/stateful-app:1.1 .
-docker push ntipladmin/stateful-app:1.1
+docker build -t talhajuikar/stateful-data-generator:v1.0.0 .
+docker push talhajuikar/stateful-data-generator:v1.0.0
 ```
 
-Make sure to replace `ntipladmin` with your Docker Hub username or your private registry if needed.
+Make sure to replace `talhajuikar/stateful-data-generator:v1.0.0` with your Docker Hub username or your private registry if needed.
 
 ### 2. Update the image name in the deployment
 
 Edit the `k8s/app-deployment.yaml` file and update the image name:
 
 ```yaml
-image: ntipladmin/stateful-app:1.1
+image: talhajuikar/stateful-data-generator:v1.0.0
 ```
 
 ### 3. Deploy the application to Kubernetes
@@ -112,9 +112,6 @@ minikube service stateful-app-service --url
 Use the provided script to generate load on the application:
 
 ```bash
-# First, set up port forwarding if needed
-kubectl port-forward service/stateful-app-service 3000:80
-
 # In another terminal, run the load generation script
 ./generate_load.sh
 ```
@@ -209,81 +206,14 @@ curl http://<application-url>/api/data
 
 # Or visit the application UI to verify data persistence
 ```
-
-This test confirms that the Persistent Volume Claims (PVCs) are properly working and your data survives pod restarts. The PVCs maintain your MongoDB data even when the StatefulSet is scaled down to zero, demonstrating true stateful persistence in Kubernetes.
-
 ## Updating an Existing Deployment
 
 If you've already deployed an earlier version:
 
 ```bash
 # Update the image version in your deployment
-kubectl set image deployment/stateful-app stateful-app=ntipladmin/stateful-app:1.1
+kubectl set image deployment/stateful-app stateful-app=talhajuikar/stateful-data-generator:v1.0.0
 
 # Or update the YAML file and apply it
 kubectl apply -f k8s/app-deployment.yaml
-```
-
-## Environment Variables
-
-The application can be configured with the following environment variables:
-
-- `PORT`: The port on which the application runs (default: 3000)
-- `MONGODB_URI`: MongoDB connection string (default: mongodb://mongodb-service:27017/statefulapp)
-
-You can override these in your Kubernetes deployment by editing the `app-deployment.yaml` file:
-
-```yaml
-env:
-- name: PORT
-  value: "3000"
-- name: MONGODB_URI
-  value: "mongodb://mongodb-service:27017/statefulapp"
-```
-
-## Troubleshooting
-
-### MongoDB Connection Issues
-
-If the application can't connect to MongoDB:
-
-```bash
-# Check if MongoDB pod is running
-kubectl get pods -l app=mongodb
-
-# Check MongoDB logs
-kubectl logs mongodb-0
-
-# Check if MongoDB service is properly configured
-kubectl describe svc mongodb-service
-```
-
-### Application Issues
-
-If you're experiencing issues with the application:
-
-```bash
-# Check application logs
-kubectl logs -l app=stateful-app
-
-# Check if the application pod is running
-kubectl get pods -l app=stateful-app
-
-# Check if the service is properly configured
-kubectl describe svc stateful-app-service
-```
-
-### Data Persistence Issues
-
-If data is not persisting after pod restarts:
-
-```bash
-# Check the Persistent Volume Claims
-kubectl get pvc
-
-# Check the Persistent Volumes
-kubectl get pv
-
-# Describe the specific PVC for more details
-kubectl describe pvc mongodb-data-mongodb-0
 ```
