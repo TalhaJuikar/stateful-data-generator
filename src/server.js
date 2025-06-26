@@ -172,7 +172,14 @@ app.delete('/api/data/:id', async (req, res) => {
   try {
     const data = await Data.findByIdAndDelete(req.params.id);
     if (!data) return res.status(404).json({ error: 'Data not found' });
-    res.json({ message: 'Data deleted successfully' });
+    
+    // Get updated total count for pagination after deletion
+    const totalCount = await Data.countDocuments();
+    
+    res.json({ 
+      message: 'Data deleted successfully',
+      totalCount: totalCount
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -189,9 +196,13 @@ app.post('/api/data/delete-multiple', async (req, res) => {
     
     const result = await Data.deleteMany({ _id: { $in: ids } });
     
+    // Get updated total count for pagination after deletion
+    const totalCount = await Data.countDocuments();
+    
     res.json({ 
       message: `Successfully deleted ${result.deletedCount} entries`,
-      deletedCount: result.deletedCount 
+      deletedCount: result.deletedCount,
+      totalCount: totalCount
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -204,7 +215,8 @@ app.delete('/api/data', async (req, res) => {
     const result = await Data.deleteMany({});
     res.json({ 
       message: `Successfully deleted all ${result.deletedCount} entries`,
-      deletedCount: result.deletedCount 
+      deletedCount: result.deletedCount,
+      totalCount: 0
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

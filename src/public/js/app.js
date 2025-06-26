@@ -158,7 +158,9 @@ function setupDeleteButtons() {
                 .then(response => response.json())
                 .then(data => {
                     console.log('Delete successful:', data);
-                    window.location.reload();
+                    
+                    // Check if pagination needs to be updated
+                    checkPaginationAfterDelete(data.totalCount);
                 })
                 .catch(error => {
                     console.error('Error deleting data:', error);
@@ -543,9 +545,7 @@ function setupMultiSelect() {
             
             updateDeleteSelectedButton();
         });
-    });
-    
-    // Handle Delete Selected button
+    });        // Handle Delete Selected button
     deleteSelectedBtn.addEventListener('click', function() {
         const selectedIds = Array.from(document.querySelectorAll('.entry-checkbox:checked'))
                                .map(checkbox => checkbox.value);
@@ -572,7 +572,9 @@ function setupMultiSelect() {
             .then(data => {
                 console.log('Delete multiple successful:', data);
                 deleteSelectedModal.hide();
-                window.location.reload();
+                
+                // Check if pagination needs to be updated
+                checkPaginationAfterDelete(data.totalCount);
             })
             .catch(error => {
                 console.error('Error deleting multiple entries:', error);
@@ -596,7 +598,9 @@ function setupDeleteAll() {
                 if (deleteAllModal) {
                     deleteAllModal.hide();
                 }
-                window.location.reload();
+                
+                // For delete all, always redirect to page 1
+                redirectToPage(1);
             })
             .catch(error => {
                 console.error('Error deleting all entries:', error);
@@ -621,4 +625,37 @@ function setupEntriesLimitSelector() {
             window.location.href = `/?limit=${limit}&page=${currentPage}`;
         });
     }
+}
+
+// Pagination utilities to handle redirects after deletion
+function checkPaginationAfterDelete(totalCount) {
+    console.log('Checking pagination after delete, totalCount:', totalCount);
+    
+    // Get current page and limit from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPage = parseInt(urlParams.get('page')) || 1;
+    const currentLimit = parseInt(urlParams.get('limit')) || 10;
+    
+    // Calculate the maximum possible page number based on the updated total count
+    const maxPage = Math.max(1, Math.ceil(totalCount / currentLimit));
+    
+    console.log('Current page:', currentPage, 'Max page after delete:', maxPage);
+    
+    // If we're on a page that no longer has data, redirect to the last valid page
+    if (currentPage > maxPage) {
+        console.log('Current page exceeds max page, redirecting to:', maxPage);
+        redirectToPage(maxPage);
+    } else {
+        // Otherwise just refresh the current page
+        window.location.reload();
+    }
+}
+
+function redirectToPage(page) {
+    // Get current limit from URL or use default
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentLimit = urlParams.get('limit') || 10;
+    
+    // Navigate to the specified page with the current limit
+    window.location.href = `/?page=${page}&limit=${currentLimit}`;
 }
