@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: stateful-app
-        image: talhajuikar/stateful-data-generator:latest
+        image: talhajuikar/stateful-data-generator:v1.0.0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
